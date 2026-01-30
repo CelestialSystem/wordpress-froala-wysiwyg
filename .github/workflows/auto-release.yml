@@ -1,3 +1,4 @@
+
 name: Auto Release – WordPress
 
 on:
@@ -17,16 +18,16 @@ jobs:
 
     steps:
       # --------------------------------------------
-      # Validate release intent (release: yes)
+      # Validate release intent
       # --------------------------------------------
       - name: Validate release intent
         id: intent
         uses: actions/github-script@v6
         with:
           script: |
-            const body  = context.payload.pull_request.body || '';
+            const body = context.payload.pull_request.body || '';
             const title = context.payload.pull_request.title || '';
-            const text  = `${title}\n${body}`;
+            const text = `${title}\n${body}`;
 
             core.setOutput(
               'release',
@@ -49,19 +50,15 @@ jobs:
           fetch-depth: 0
 
       # --------------------------------------------
-      # Read version from WordPress plugin header
+      # Read version from repo (SOURCE OF TRUTH)
       # --------------------------------------------
-      - name: Read version from plugin file
+      - name: Read version from assets
         run: |
-          # Adjust if your main plugin file has a fixed name
-          PLUGIN_FILE=$(ls *.php | head -n 1)
-
-          VERSION=$(grep -iE '^\\s*Version:\\s*' "$PLUGIN_FILE" \
-            | head -n1 \
-            | sed -E 's/Version:\\s*//I')
+          # Example: extract version from any JS/CSS reference
+          VERSION=$(grep -RhoE '[0-9]+\.[0-9]+\.[0-9]+' public | head -n1)
 
           if [ -z "$VERSION" ]; then
-            echo "❌ Failed to read version from plugin header"
+            echo "❌ Failed to determine version from repository"
             exit 1
           fi
 
@@ -74,7 +71,7 @@ jobs:
           echo "✅ Releasing version $VERSION"
 
       # --------------------------------------------
-      # Prepare clean release notes
+      # Prepare clean release notes from PR body
       # --------------------------------------------
       - name: Prepare release notes
         run: |
@@ -89,7 +86,7 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       # --------------------------------------------
-      # Create GitHub Release (NO build artifacts)
+      # Create GitHub Release (NO artifacts)
       # --------------------------------------------
       - name: Create GitHub Release
         env:
