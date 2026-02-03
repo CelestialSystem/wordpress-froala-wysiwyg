@@ -99,14 +99,6 @@ jobs:
           rsync -av --delete /tmp/wysiwyg-main/css/ admin/css/
 
       # --------------------------------------------
-      # Update JS/CSS version references
-      # --------------------------------------------
-      - name: Update JS/CSS versions
-        run: |
-          find public admin -type f \( -name "*.js" -o -name "*.css" \) \
-            -exec sed -i -E "s/[0-9]+\.[0-9]+\.[0-9]+/${VERSION}/g" {} \;
-
-      # --------------------------------------------
       # Commit & push
       # --------------------------------------------
       - name: Commit & push
